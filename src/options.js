@@ -10,6 +10,7 @@ const defaultOptions = {
   silent: false,
   summary: true,
   debug: false,
+  nameFunction: undefined,
 }
 
 export default class Options {

@@ -26,6 +26,7 @@ const startTalkback = async (opts) => {
       ...opts
     }
   )
+  console.log('opts',opts)
   await talkbackServer.start()
   return talkbackServer
 }
@@ -91,6 +92,30 @@ describe("talkback", async () => {
       expect(tape.req.url).to.eql("/test/1")
       expect(JSON.parse(tape.res.body)).to.eql(expectedResBody)
     })
+
+    it("proxies and creates a new tape when the GET request is unknown using the name function", async () => {
+      talkbackServer = await startTalkback(
+        {
+          nameFunction:
+            (req) => { 
+              return `unnamed-${req.method}`
+          }
+        }
+      );
+      const res = await fetch("http://localhost:8899/test/1", {compress: false, method: "GET"})
+      expect(res.status).to.eq(200)
+
+      const expectedResBody = {ok: true, body: null}
+      const body = await res.json()
+      expect(body).to.eql(expectedResBody)
+
+      const tape = JSON5.parse(fs.readFileSync(tapesPath + "/unnamed-GET.json5"))
+      expect(tape.meta.reqHumanReadable).to.eq(undefined)
+      expect(tape.meta.resHumanReadable).to.eq(true)
+      expect(tape.req.url).to.eql("/test/1")
+      expect(JSON.parse(tape.res.body)).to.eql(expectedResBody)
+    })
+
 
     it("proxies and creates a new tape when the POST request is unknown with human readable req and res", async () => {
       talkbackServer = await startTalkback()

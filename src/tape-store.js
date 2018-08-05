@@ -48,7 +48,7 @@ export default class TapeStore {
     }
   }
 
-  save(tape) {
+  save(tape, nameFunction) {
     const {url, method, headers} = tape.req;
     const reqBody = this.bodyFor(tape.req, tape, "reqHumanReadable");
     const resBody = this.bodyFor(tape.res, tape, "resHumanReadable");
@@ -71,7 +71,14 @@ export default class TapeStore {
       }
     };
 
-    const tapeName = `unnamed-${this.tapes.length}.json5`;
+    let tapeName = `unnamed-${this.tapes.length}.json5`;
+    if (nameFunction) {
+      tapeName = `${nameFunction(tape.req)}.json5`;
+      let count = 1
+      while (this.tapes.some(tape => tape.path === tapeName)){
+        tapeName = `${nameFunction(tape.req)}-${count++}`
+      }
+    }
     tape.path = tapeName;
     const filename = this.path + tapeName;
     this.options.logger.log(`Saving request ${tape.req.url} at ${filename}`);

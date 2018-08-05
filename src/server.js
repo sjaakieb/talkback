@@ -65,7 +65,7 @@ export default class TalkbackServer {
           if (this.options.record) {
             fRes = await this.makeRealRequest(req)
             tape.res = {...fRes}
-            this.tapeStore.save(tape)
+            this.tapeStore.save(tape, this.options.nameFunction)
           } else {
             fRes = await this.onNoRecord(req)
           }
